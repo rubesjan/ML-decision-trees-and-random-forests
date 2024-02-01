@@ -128,9 +128,9 @@ def get_node(
 
     if best["ig"] > 0:  # information gain is significant
         mask = xtrain[best["col"]] < best["threshold"]
-        left = get_node(xtrain[mask], ytrain[mask],
+        left = get_node(xtrain[mask].drop(best["col"], axis=1), ytrain[mask],
                         max_depth-1, min_samples_leaf, metric)
-        right = get_node(xtrain[~mask], ytrain[~mask],
+        right = get_node(xtrain[~mask].drop(best["col"], axis=1), ytrain[~mask],
                          max_depth-1, min_samples_leaf, metric)
         return SplitNode(best["threshold"], best["col"], left, right)
 
