@@ -1,4 +1,4 @@
-# Machile learning - implementation of decision trees and random forests
+# Machine learning - implementation of decision trees and random forests
 
 Implementation of machine learning algorithms for predicting binary values - decision trees (ID3) and bagging - random forests
 
