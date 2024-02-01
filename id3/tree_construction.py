@@ -7,16 +7,22 @@ from pandas.core.api import DataFrame
 from pandas.core.api import Series
 from id3.tree.node import Node, LeafNode, SplitNode
 
+
 def information_gain(y1: Series, y2: Series, init_inf: float, metric) -> float:
     """
     compute information gain, when y is splitted to the two given sets (y1 and y2)
+
+    using uniform sample weight
     """
-    t1 = y1.mean()
+    t1 = len(y1)
+    t2 = len(y2)
+    t1 = t1 / (t1 + t2)
     t2 = 1 - t1
     y1_val = metric(y1)
     y2_val = metric(y2)
     i_gain = init_inf - t1*y1_val - t2*y2_val
     return i_gain
+
 
 def get_best_ig(xtrain: DataFrame,
                 ytrain: Series,
@@ -36,17 +42,19 @@ def get_best_ig(xtrain: DataFrame,
         function to compute degree of disorder in a set
     """
 
-    init_ig = metric(ytrain) # equals 0 only if all instances are same class
+    init_ig = metric(ytrain)  # equals 0 only if all instances are same class
 
-    best = { # best criterion to split the given set
+    best = {  # best criterion to split the given set
         "ig": 0,
         "col": None,
-        "threshold": None} 
+        "threshold": None}
     all_best = [best]
-    for col in xtrain.columns: # for all columns
+    for col in xtrain.columns:  # for all columns
         values = sorted(xtrain[col].unique())
-        thresholds = [(values[i-1] + values[i])/2 for i in range(1,len(values))] # all thresholds to try
-        for threshold in thresholds: # for all thresholds
+        # all thresholds to try
+        thresholds = [(values[i-1] + values[i]) /
+                      2 for i in range(1, len(values))]
+        for threshold in thresholds:  # for all thresholds
             mask = xtrain[col] < threshold
             y1 = ytrain[mask]
             y2 = ytrain[~mask]
@@ -55,7 +63,8 @@ def get_best_ig(xtrain: DataFrame,
             if len(y1) < min_samples_leaf or len(y2) < min_samples_leaf:
                 continue
 
-            i_gain = information_gain(y1, y2, init_ig, metric) # information gain using this split
+            # information gain using this split
+            i_gain = information_gain(y1, y2, init_ig, metric)
             if i_gain > best["ig"]:
                 best["ig"] = i_gain
                 best["col"] = col
@@ -63,15 +72,17 @@ def get_best_ig(xtrain: DataFrame,
                 all_best.clear()
                 all_best.append(best)
             elif i_gain == best["ig"]:
-                all_best.append({"ig":i_gain, "col":col, "threshold":threshold})
+                all_best.append(
+                    {"ig": i_gain, "col": col, "threshold": threshold})
     return all_best
 
+
 def get_node(
-            xtrain: DataFrame,
-            ytrain: Series,
-            max_depth: int,
-            min_samples_leaf: int,
-            metric) -> Node: # : callable[[Series], float]
+        xtrain: DataFrame,
+        ytrain: Series,
+        max_depth: int,
+        min_samples_leaf: int,
+        metric) -> Node:  # : callable[[Series], float]
     """
     Recursively creates a decision tree with given hyperparameters and returns root node
     using polymorphic nodes from tree/nodes.py
@@ -98,12 +109,13 @@ def get_node(
     """
 
     if len(ytrain) != len(xtrain):
-        raise TypeError(f"invalid data shape - x shape = {xtrain.shape}, y shape = {ytrain.shape}")
+        raise TypeError(
+            f"invalid data shape - x shape = {xtrain.shape}, y shape = {ytrain.shape}")
 
     if len(ytrain) < min_samples_leaf:
         raise TypeError("Not enough data!")
 
-    init_ig = metric(ytrain) # equals 0 only if all instances are same class
+    init_ig = metric(ytrain)  # equals 0 only if all instances are same class
 
     if max_depth < 1 or init_ig == 0:
         return LeafNode(ytrain)
@@ -114,10 +126,12 @@ def get_node(
     if len(all_best) > 1:
         best = all_best[randint(0, len(all_best) - 1)]
 
-    if best["ig"] > 0: # information gain is significant
+    if best["ig"] > 0:  # information gain is significant
         mask = xtrain[best["col"]] < best["threshold"]
-        left = get_node(xtrain[mask], ytrain[mask], max_depth-1, min_samples_leaf, metric)
-        right = get_node(xtrain[~mask], ytrain[~mask], max_depth-1, min_samples_leaf, metric)
+        left = get_node(xtrain[mask], ytrain[mask],
+                        max_depth-1, min_samples_leaf, metric)
+        right = get_node(xtrain[~mask], ytrain[~mask],
+                         max_depth-1, min_samples_leaf, metric)
         return SplitNode(best["threshold"], best["col"], left, right)
 
     # no criterion to gain any more information - create a leaf
