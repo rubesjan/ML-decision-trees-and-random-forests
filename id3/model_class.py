@@ -9,39 +9,43 @@ import numpy as np
 from id3.metrics import gini, entropy
 from id3.tree_construction import get_node
 
+
 class MyDecisionTree():
     """decision tree classifier
-    
+
     Parameters:
     max_depth: int
         maximal depth of the tree
     min_samples_leaf: int
         minimum number of samples required to be a leaf node
     criterion: {"gini", "entropy"}
-        criterion to measure degree of disorder in a given set (pandas series) 
+        criterion to measure degree of disorder in a given set (pandas series)
     """
 
     def __init__(self,
-                max_depth: int = None,
-                min_samples_leaf: int = 1,
-                criterion: str = "gini"):
+                 max_depth: int = None,
+                 min_samples_leaf: int = 1,
+                 criterion: str = "gini"):
         """
         construct tree with given hyperparameters
         """
         if not isinstance(max_depth, int):
-            raise TypeError(f"Invalid max_depth! Expected int, got: {type(max_depth)}")
+            raise TypeError(
+                f"Invalid max_depth! Expected int, got: {type(max_depth)}")
 
         if max_depth < 1:
             raise ValueError("max_depth must be a positive integer!")
 
         if not isinstance(min_samples_leaf, int):
-            raise TypeError(f"Invalid min_samples_leaf! Expected int got: {type(min_samples_leaf)}")
+            raise TypeError(
+                f"Invalid min_samples_leaf! Expected int got: {type(min_samples_leaf)}")
 
         if min_samples_leaf < 0:
             raise ValueError("min_samples_leaf must be a positive integer!")
 
         if not isinstance(criterion, str):
-            raise TypeError(f"Invalid criterion! Expected string, got: {type(criterion)}")
+            raise TypeError(
+                f"Invalid criterion! Expected string, got: {type(criterion)}")
         if criterion.lower() == "gini":
             self.metric = gini
         elif criterion.lower() == "entropy":
@@ -79,9 +83,11 @@ class MyDecisionTree():
             raise TypeError("Invalid data!")
 
         if len(x) != len(y):
-            raise ValueError(f"num of x rows: {len(x)} != num of y rows: {len(y)}")
+            raise ValueError(
+                f"num of x rows: {len(x)} != num of y rows: {len(y)}")
 
-        self.tree = get_node(x, y, self.max_depth, self.min_samples_leaf, self.metric)
+        self.tree = get_node(x, y, self.max_depth,
+                             self.min_samples_leaf, self.metric)
         return self
 
     def predict_prob(self, x: DataFrame):
@@ -94,10 +100,12 @@ class MyDecisionTree():
             raise SyntaxError("Tree was not fitted!")
 
         if not isinstance(x, DataFrame):
-            raise TypeError(f"Invalid input! Expected DataFrame got: {type(x)}")
+            raise TypeError(
+                f"Invalid input! Expected DataFrame got: {type(x)}")
 
         res = np.zeros((x.shape[0], 2))
-        for i, index in enumerate(x.index): # for every row in the given DataFrame
+        # for every row in the given DataFrame
+        for i, index in enumerate(x.index):
             res[i, 1] = self.tree.predict_prob(x.loc[index])
             res[i, 0] = 1 - res[i, 1]
         return res
@@ -111,9 +119,11 @@ class MyDecisionTree():
             raise SyntaxError("Tree was not fitted!")
 
         if not isinstance(x, DataFrame):
-            raise TypeError(f"Invalid input! Expected DataFrame got: {type(x)}")
+            raise TypeError(
+                f"Invalid input! Expected DataFrame got: {type(x)}")
 
         res = np.zeros(x.shape[0])
-        for i, index in enumerate(x.index): # for every row in the given DataFrame
+        # for every row in the given DataFrame
+        for i, index in enumerate(x.index):
             res[i] = self.tree.predict(x.loc[index])
         return res

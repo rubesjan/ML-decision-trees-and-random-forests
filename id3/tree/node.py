@@ -5,10 +5,12 @@ polymorphic nodes of decision tree
 import pandas as pd
 from pandas.core.api import Series
 
+
 class Node:
     """
     Abstract class of all nodes in decision tree
     """
+
     def predict_prob(self, xtrain: Series) -> float:
         """
         Abstract method
@@ -21,10 +23,12 @@ class Node:
         prediction of y of the given record
         """
 
+
 class SplitNode(Node):
     """
     Internal node in a decision tree
     """
+
     def __init__(self,
                  threshold: float,
                  column: str,
@@ -66,10 +70,12 @@ class SplitNode(Node):
             return self.left.predict(xtrain)
         return self.right.predict(xtrain)
 
+
 class LeafNode(Node):
     """
     Leaf node in a decision tree
     """
+
     def __init__(self,
                  y: pd.Series):
         """

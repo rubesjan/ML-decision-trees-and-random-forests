@@ -5,6 +5,7 @@ basics metrics for computing diversification
 from pandas.core.api import Series
 import numpy as np
 
+
 def gini(y: Series) -> float:
     """
     compute gini index of the given set
@@ -13,6 +14,7 @@ def gini(y: Series) -> float:
         return 0
     p = y.mean()
     return 2*p*(1-p)
+
 
 def entropy(y: Series) -> float:
     """
